@@ -1,6 +1,43 @@
+<!DOCTYPE html>
 <html>
-    <head></head>
-    <body>
-        <h1>Yo</h1>
-    </body>
+<head>
+    <style>
+    .board {
+        position: absolute;
+        height: 700px;
+        width: 700px;
+    }
+    .square {
+        height: 280px;
+        width: 280px;
+        float: left;
+        border: 2px;
+        border-style: solid;
+        border-color: white;
+        opacity: .3;
+    }
+    .red {
+        background-color: red;
+    }
+    .blue {
+        background-color: blue;
+    }
+    .green {
+        background-color: green;
+    }
+    .yellow {
+        background-color: yellow;
+    }
+
+    </style>
+</head>
+<body>
+    <div class="board">
+        <div id="0" class="red square"></div>
+        <div id="1" class="blue square"></div>
+        <div id="2" class="yellow square"></div>
+        <div id="3" class="green square"></div>
+    </div>
+<script src="/js/simon.js"></script>
+</body>
 </html>
