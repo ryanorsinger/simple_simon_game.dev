@@ -1,15 +1,20 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
     <style>
     .board {
-        position: absolute;
-        height: 700px;
-        width: 700px;
+        position: relative;
+        margin-bottom: 90px;
+        margin-left: auto;
+        margin-right: auto;
+        height: 600px;
+        width: 600px;
+        text-align: right;
     }
     .square {
-        height: 280px;
-        width: 280px;
+        height: 220px;
+        width: 220px;
         float: left;
         border: 2px;
         border-style: solid;
@@ -28,15 +33,24 @@
     .yellow {
         background-color: yellow;
     }
+    .control-button {
+        font-weight: bold;
+        width: 90px;
+        height: 60px;
+    }
 
     </style>
 </head>
 <body>
     <div class="board">
+        <h3>Welcome to Símon</h3>
         <div id="0" class="red square"></div>
-        <div id="1" class="blue square"></div>
-        <div id="2" class="yellow square"></div>
-        <div id="3" class="green square"></div>
+        <div id="1" class="green square"></div>
+        <div id="2" class="blue square"></div>
+        <div id="3" class="yellow square"></div>
+        <button id="start" class="control-button">Start</button>
+        <button id="round" class="control-button">Round: 0</button>
+        <button id="stop" class="control-button">Stop</button>
     </div>
 <script src="/js/simon.js"></script>
 </body>

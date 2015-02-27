@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Simple Simon: JavaScript</title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+
+      /* styles for the entire body of the document */
+      body {
+        text-align: center;
+        font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 300;
+      }
+
+      /*
+       * styles for the container div
+       * todo: assign top padding of 100px
+       */
+      .container {
+        padding-top: 100px;
+      }
+
+      /*
+       * styles for the simon game board
+       * todo: set proper width
+       * todo: set proper margin
+       * todo: add a 5px border
+       */
+      .game-board {
+        width: 260px;
+        padding: 10px;
+        margin: auto;
+        border: 5px solid #c0c0c0;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
+
+      /*
+       * styles for all blocks in the board
+       * todo: add a 10px margin around the blocks
+       */
+      .game-board .game-block {
+        display: inline-block;
+        height: 100px;
+        width: 100px;
+        margin: 10px;
+      }
+
+      /* assign this style to turn game blocks "off" */
+      .game-board .game-block.off {
+        background-image:url('lighten70.png') !important;
+      }
+
+      /*
+       * styles for individual blocks in the board
+       * todo: assign a unique background color to each of the blocks below
+       */
+      #block-1 { background: red; }
+      #block-2 { background: blue; }
+      #block-3 { background: green; }
+      #block-4 { background: gold; }
+
+      /*
+       * styles for the game messages container
+       * todo: add margin or padding as appropriate
+       */
+      .game-messages {
+        margin: 10px;
+      }
+
+      /*
+       * styles for the game buttons container
+       * todo: add margin or padding as appropriate
+       */
+      .game-buttons {
+        margin: 10px;
+      }
+
+      /*
+       * styles for all divs in the came messages container
+       * todo: add appropriate css style
+       * todo: add margin or padding as appropriate
+       * todo: make the font bold
+       */
+      .game-messages div {
+        margin: 10px;
+        font-weight: bold;
+      }
+
+      /*
+       * style specifically for the game over div
+       * todo: add appropriate css style
+       * todo: make font color red
+       */
+      #msg-game-over {
+        color: red;
+      }
+
+      /* assign this style to elements to hide them */
+      .inactive {
+        display: none;
+      }
+
+    </style>
+  </head>
+  <body>
+
+    <div class="container">
+
+      <h1>Simple Simon</h1>
+
+      <div class="game-board">
+        <!-- todo: add code necessary to call processClick(id) to each game block -->
+        <div id="block-1" class="game-block off" onmousedown="processClick(1)"></div>
+        <div id="block-2" class="game-block off" onmousedown="processClick(2)"></div>
+        <div id="block-3" class="game-block off" onmousedown="processClick(3)"></div>
+        <div id="block-4" class="game-block off" onmousedown="processClick(4)"></div>
+      </div>
+
+      <div class="game-messages">
+        <div id="msg-start">Click start to begin.</div>
+        <div id="msg-wait" class="inactive">Watch the sequence.</div>
+        <div id="msg-repeat" class="inactive">Repeat the sequence you just saw.</div>
+        <div id="msg-game-over" class="inactive">Oops! Wrong Block. Game Over.</div>
+        <div id="msg-round" class="inactive">Current Round: <span id="game-round">0</span></div>
+      </div>
+
+      <div class="game-buttons">
+        <!-- todo: add a start button that call start() -->
+        <button id="btn-start" onclick="start()">Start New Game</button>
+      </div>
+
+    </div>
+
+    <script>
+
+      // initialize variables for sequence storage
+      var gameSequence, inputSequence;
+
+      // default game speed in milliseconds
+      var defaultSpeed = 500;
+
+      // actual blink and wait durations
+      var blinkDuration, waitDuration;
+
+      // variable to track if user input is allowed
+      var inputEnabled = false;
+
+      /*
+       * Begin a new game.
+       */
+      function start() {
+
+        // clear game sequence and input sequence
+        gameSequence = [];
+        inputSequence = [];
+
+        // set blink duration to default speed
+        blinkDuration = defaultSpeed;
+
+        // set wait duration to 2x the blink duration
+        waitDuration = blinkDuration * 2;
+
+        // deactivate visual elements
+        deactivateElementById('msg-game-over');
+        deactivateElementById('msg-start');
+        deactivateElementById('btn-start');
+
+        // activate visual elements
+        activateElementById('msg-round');
+
+        // get a block to start the game
+        next();
+
+      }
+
+      /*
+       * Continue current game by selecting a random block and playing sequence.
+       */
+      function next() {
+
+        // get a random block
+        var block = getRandomInt(1, 4);
+
+        // add the new block to the game sequence
+        gameSequence.push(block);
+
+        // update game messages
+        updateGameMessages();
+
+        // increase game speed
+        levelUp();
+
+        // play the game sequence
+        playback();
+
+      }
+
+      /*
+       * Increase the speed of the game.
+       */
+      function levelUp() {
+
+        // only when the blink duration is higher than 100, do the following:
+        // decrement the blink duration
+        // set the wait duration to 2x the new blink duration
+        if (blinkDuration > 100) {
+          blinkDuration -= 20;
+          waitDuration = blinkDuration * 2;
+        }
+
+      }
+
+      /*
+       * Allow the user to begin inputting a sequence.
+       */
+      function enableInput() {
+
+        // after waiting the amount of the default game speed do the following:
+        // activate msg-repeat
+        // deactivate msg-wait
+        // enable user input
+        setTimeout(function () {
+          activateElementById('msg-repeat');
+          deactivateElementById('msg-wait');
+          inputEnabled = true;
+        }, defaultSpeed);
+
+      }
+
+      /*
+       * Prevent the user from inputting a sequence.
+       */
+      function disableInput() {
+
+        // immediately disable user input
+        // after waiting the amount of the default game speed do the following:
+        // deactivate msg-repeat
+        // activate msg-wait
+        inputEnabled = false;
+        setTimeout(function () {
+          deactivateElementById('msg-repeat');
+          activateElementById('msg-wait');
+        }, defaultSpeed);
+
+      }
+
+      /*
+       * Play back the current game sequence.
+       */
+      function playback() {
+
+        // call disableInput() function
+        disableInput();
+
+        // create a counter variable
+        var i = 0;
+
+        // do the following at an interval based on the wait duration
+        var interval = setInterval(function() {
+
+          // light up the block in the sequence that corresponds to the counter variable
+          lightBlock(gameSequence[i]);
+
+          // increment the counter variable
+          i++;
+
+          // check to see if the counter is equal to the game sequence length
+          if (i >= gameSequence.length) {
+            // stop repeating this interval
+            clearInterval(interval);
+            // call enableInput() function
+            enableInput();
+          }
+
+        }, waitDuration);
+
+      }
+
+      /*
+       * Update any game messages that need to be updated.
+       */
+      function updateGameMessages() {
+
+        // set the html contents of the game-round span to the length of the game sequence
+        document.getElementById('game-round').innerHTML = gameSequence.length;
+
+      }
+
+      /*
+       * Light up one of the blocks on the game board.
+       * blockNumber: which block to light.
+       * duration: how long to light the block for.
+       */
+      function lightBlock(blockNumber, duration) {
+
+        // if duration wasn't passed, set it to the blinkDuration
+        if (duration == undefined) {
+          duration = blinkDuration;
+        }
+
+        // find the block that was clicked by block number
+        var block = document.getElementById('block-' + blockNumber);
+
+        // remove the css class "off" from the block
+        block.classList.remove('off');
+
+        // after waiting for a period based on the duration, add the "off" class back to the block
+        window.setTimeout(function() {
+          block.classList.add('off');
+        }, duration);
+
+      }
+
+      /*
+       * Process a user click on a game block.
+       * blockNumber: which block was clicked.
+       */
+      function processClick(blockNumber) {
+
+        // only if user input is enabled, do the following:
+        // light the specified block for 250 milliseconds
+        // add the selected block the input sequence
+        // call the compareSequences() function
+        if (inputEnabled) {
+          lightBlock(blockNumber, 250);
+          inputSequence.push(blockNumber);
+          compareSequences();
+        }
+      }
+
+      /*
+       * Compare the game sequence to the input sequence and decide
+       * whether the game should continue or not.
+       */
+      function compareSequences() {
+
+        // declare variable to keep error status
+        var sequenceError = false;
+
+        // loop through the input sequence and perform the following:
+        // check it the game sequence and input sequence match for a given offset
+        // if they don't match set your error status variable to true and get out of the loop
+        for (var i = 0; i < inputSequence.length; i++) {
+          if (gameSequence[i] == undefined || gameSequence[i] != inputSequence[i]) {
+            sequenceError = true;
+            break;
+          }
+        }
+
+        // check if there is an error
+        // if there is, call gameOver()
+        // otherwise, check if the input sequence is the same length as the game sequence
+        // if it is, the user has completed the sequence, so clear the input sequence and call next()
+        if (sequenceError) {
+          gameOver();
+        } else if (inputSequence.length == gameSequence.length) {
+          inputSequence = [];
+          next();
+        }
+      }
+
+      /*
+       * Un-hide an html element by id.
+       * id: id of the html element.
+       */
+      function activateElementById(id) {
+        var block = document.getElementById(id);
+        block.classList.remove('inactive');
+      }
+
+      /*
+       * Hide an html element by id.
+       * id: id of the html element.
+       */
+      function deactivateElementById(id) {
+        var block = document.getElementById(id);
+        block.classList.add('inactive');
+      }
+
+      /*
+       * Perform everything necessary to end the current game.
+       */
+      function gameOver() {
+
+        // explicitly disable input
+        inputEnabled = false;
+
+        // deactivate visual elements
+        deactivateElementById('msg-repeat');
+        deactivateElementById('msg-wait');
+
+        // activate visual elements
+        activateElementById('msg-game-over');
+        activateElementById('btn-start');
+      }
+
+      /*
+       * Get a random integer between the min and max values (inclusive).
+       * Source: http://stackoverflow.com/questions/1527803/generating-random-numbers-in-javascript-in-a-specific-range
+       */
+      function getRandomInt(min, max) {
+        return Math.floor(Math.random() * (max - min + 1)) + min;
+      }
+
+    </script>
+  </body>
+</html>
